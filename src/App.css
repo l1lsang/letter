@@ -38,6 +38,7 @@
 .admin-toggle,
 .primary-action,
 .secondary-action,
+.auth-tabs button,
 .section-title button,
 .link-row button {
   display: inline-flex;
@@ -75,6 +76,7 @@
 .secondary-action:focus-visible,
 .section-title button:focus-visible,
 .link-row button:focus-visible,
+.auth-tabs button:focus-visible,
 .letter-link:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
@@ -279,6 +281,29 @@ textarea:focus-visible {
   color: var(--ink);
   font-size: 25px;
   line-height: 1.25;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  background: var(--surface-soft);
+}
+
+.auth-tabs button {
+  min-height: 38px;
+  color: var(--muted);
+  background: transparent;
+}
+
+.auth-tabs button[aria-selected='true'] {
+  color: var(--surface);
+  background: var(--ink);
+  box-shadow: 0 8px 16px rgba(37, 33, 43, 0.13);
 }
 
 .admin-form {

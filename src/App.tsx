@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import './App.css'
 import { auth, isFirebaseConfigured } from './firebase'
@@ -19,6 +24,8 @@ type LetterContent = {
   links: LetterLink[]
   updatedAt?: string
 }
+
+type AuthMode = 'login' | 'signup'
 
 const defaultLetter: LetterContent = {
   title: '마음을 전하는 편지',
@@ -99,11 +106,14 @@ function App() {
   const [draft, setDraft] = useState<LetterContent>(defaultLetter)
   const [user, setUser] = useState<User | null>(null)
   const [adminOpen, setAdminOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<AuthMode>('login')
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
+  const [signupPasswordConfirm, setSignupPasswordConfirm] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSigningIn, setIsSigningIn] = useState(false)
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   const paragraphs = useMemo(
@@ -197,6 +207,35 @@ function App() {
       setStatusMessage('관리자 로그인 정보를 확인해주세요.')
     } finally {
       setIsSigningIn(false)
+    }
+  }
+
+  async function handleSignup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!auth) {
+      setStatusMessage('Firebase 클라이언트 환경변수를 먼저 설정해주세요.')
+      return
+    }
+
+    if (loginPassword !== signupPasswordConfirm) {
+      setStatusMessage('비밀번호가 서로 다릅니다.')
+      return
+    }
+
+    setIsCreatingAccount(true)
+    setStatusMessage('')
+
+    try {
+      await createUserWithEmailAndPassword(auth, loginEmail, loginPassword)
+      setLoginPassword('')
+      setSignupPasswordConfirm('')
+      setDraft(letter)
+      setStatusMessage('회원가입이 완료되었습니다.')
+    } catch {
+      setStatusMessage('회원가입 정보를 확인해주세요.')
+    } finally {
+      setIsCreatingAccount(false)
     }
   }
 
@@ -355,37 +394,100 @@ function App() {
           </div>
 
           {!user ? (
-            <form className="admin-form" onSubmit={handleLogin}>
-              <label>
-                이메일
-                <input
-                  autoComplete="email"
-                  disabled={!isFirebaseConfigured || isSigningIn}
-                  onChange={(event) => setLoginEmail(event.target.value)}
-                  required
-                  type="email"
-                  value={loginEmail}
-                />
-              </label>
-              <label>
-                비밀번호
-                <input
-                  autoComplete="current-password"
-                  disabled={!isFirebaseConfigured || isSigningIn}
-                  onChange={(event) => setLoginPassword(event.target.value)}
-                  required
-                  type="password"
-                  value={loginPassword}
-                />
-              </label>
-              <button
-                className="primary-action"
-                disabled={!isFirebaseConfigured || isSigningIn}
-                type="submit"
+            <>
+              <div className="auth-tabs" role="tablist" aria-label="인증 방식">
+                <button
+                  aria-selected={authMode === 'login'}
+                  onClick={() => {
+                    setAuthMode('login')
+                    setStatusMessage('')
+                  }}
+                  role="tab"
+                  type="button"
+                >
+                  로그인
+                </button>
+                <button
+                  aria-selected={authMode === 'signup'}
+                  onClick={() => {
+                    setAuthMode('signup')
+                    setStatusMessage('')
+                  }}
+                  role="tab"
+                  type="button"
+                >
+                  회원가입
+                </button>
+              </div>
+
+              <form
+                className="admin-form"
+                onSubmit={authMode === 'login' ? handleLogin : handleSignup}
               >
-                {isSigningIn ? '로그인 중' : '로그인'}
-              </button>
-            </form>
+                <label>
+                  이메일
+                  <input
+                    autoComplete="email"
+                    disabled={
+                      !isFirebaseConfigured || isSigningIn || isCreatingAccount
+                    }
+                    onChange={(event) => setLoginEmail(event.target.value)}
+                    required
+                    type="email"
+                    value={loginEmail}
+                  />
+                </label>
+                <label>
+                  비밀번호
+                  <input
+                    autoComplete={
+                      authMode === 'login' ? 'current-password' : 'new-password'
+                    }
+                    disabled={
+                      !isFirebaseConfigured || isSigningIn || isCreatingAccount
+                    }
+                    minLength={6}
+                    onChange={(event) => setLoginPassword(event.target.value)}
+                    required
+                    type="password"
+                    value={loginPassword}
+                  />
+                </label>
+
+                {authMode === 'signup' ? (
+                  <label>
+                    비밀번호 확인
+                    <input
+                      autoComplete="new-password"
+                      disabled={!isFirebaseConfigured || isCreatingAccount}
+                      minLength={6}
+                      onChange={(event) =>
+                        setSignupPasswordConfirm(event.target.value)
+                      }
+                      required
+                      type="password"
+                      value={signupPasswordConfirm}
+                    />
+                  </label>
+                ) : null}
+
+                <button
+                  className="primary-action"
+                  disabled={
+                    !isFirebaseConfigured || isSigningIn || isCreatingAccount
+                  }
+                  type="submit"
+                >
+                  {authMode === 'login'
+                    ? isSigningIn
+                      ? '로그인 중'
+                      : '로그인'
+                    : isCreatingAccount
+                      ? '가입 중'
+                      : '회원가입'}
+                </button>
+              </form>
+            </>
           ) : (
             <form className="admin-form" onSubmit={handleSave}>
               <label>
