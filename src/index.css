@@ -1,0 +1,81 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  --bg: #f3f7fa;
+  --surface: #ffffff;
+  --surface-soft: #f8fbfc;
+  --ink: #25212b;
+  --muted: #6d6978;
+  --subtle: #9097a3;
+  --border: #dbe4ea;
+  --paper-line: #d8e9ef;
+  --paper-margin: #e66d78;
+  --teal: #0f766e;
+  --teal-deep: #0b5f59;
+  --coral: #e85d75;
+  --gold: #d8a111;
+  --danger: #b42318;
+  --shadow: 0 22px 60px rgba(53, 73, 93, 0.16);
+  --sans:
+    'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI',
+    sans-serif;
+
+  color: var(--ink);
+  background: var(--bg);
+  font: 16px/1.6 var(--sans);
+  letter-spacing: 0;
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    linear-gradient(90deg, rgba(15, 118, 110, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(37, 33, 43, 0.05) 1px, transparent 1px),
+    var(--bg);
+  background-size:
+    44px 44px,
+    44px 44px,
+    auto;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  letter-spacing: 0;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
